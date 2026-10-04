@@ -1,0 +1,342 @@
+import SwiftUI
+import CalendarDomain
+import MessageCodec
+import SharedStore
+import EventKitProvider
+import AuthorizationStore
+import GoogleCalendarProvider
+
+@MainActor
+final class MessagesModel: ObservableObject {
+    @Published var draft: ReceiveDraft?
+    @Published var calendars: [CalendarRef] = []
+    @Published var status = "Select a sample to insert a draft card. Tap the normal Messages Send button yourself."
+    @Published var appleStatus = EventKitProbe.permissionStatus().explanation
+    @Published var googleStatus = "Google not checked"
+    @Published var grantedScopes: [String] = []
+    @Published var diagnostics = ""
+    @Published var busy = false
+    @Published var canRetryInsertion = false
+    var insert: ((ShareSnapshot, URL) async throws -> Void)?
+    var openSetup: ((URL) async -> Bool)?
+    private let apple = EventKitProbe()
+    private var insertionSnapshot: ShareSnapshot?
+    private var persistence: Task<Void, Never>?
+    private struct Activation { let messageURL: URL? }
+    private var pendingActivation: Activation?
+
+    var canAdd: Bool {
+        guard !busy, let draft, !draft.writeAttempted, let selected = draft.selectedDestination else { return false }
+        return calendars.contains { $0.id == selected.id && $0.isWritable }
+    }
+
+    private func pendingStore() throws -> PendingReceiveStore {
+        try PendingReceiveStore(containerURL: HarnessConfiguration().containerURL())
+    }
+
+    func activate(messageURL: URL?) async {
+        guard !busy else {
+            pendingActivation = Activation(messageURL: messageURL)
+            return
+        }
+        busy = true
+        defer { finishWork() }
+        await persistence?.value
+        do {
+            let stored = try await pendingStore().load()
+            if let url = messageURL {
+                let codec = try HarnessConfiguration().codec()
+                let snapshot = try codec.decode(url)
+                if stored?.snapshot == snapshot { draft = stored }
+                else { draft = ReceiveDraft(snapshot: snapshot); try await persistCurrent() }
+                diagnostics = try describe(snapshot, codec: codec)
+                status = "Payload decoded. Select a destination and tap Add to save an independent copy."
+            } else if let stored {
+                draft = stored
+                diagnostics = try describe(stored.snapshot, codec: HarnessConfiguration().codec())
+                status = "Pending receive restored. Review your edits and tap Add when ready."
+            }
+            await refreshConnectionsInternal()
+        } catch {
+            // A malformed selected card must never expose a previous card's Add button.
+            if messageURL != nil { draft = nil; calendars = []; diagnostics = "" }
+            status = error.localizedDescription
+        }
+    }
+
+    func refreshConnections() async {
+        guard !busy else { return }
+        busy = true
+        defer { finishWork() }
+        await persistence?.value
+        await refreshConnectionsInternal()
+    }
+
+    private func refreshConnectionsInternal() async {
+        appleStatus = EventKitProbe.permissionStatus().explanation
+        // Rebuild choices rather than enabling Add from a stale in-memory list.
+        calendars = []
+        if EventKitProbe.permissionStatus().canListCalendars {
+            do {
+                let listed = try await apple.listCalendars(writableOnly: true)
+                calendars += listed
+                draft?.revalidateDestination(in: listed, provider: .apple)
+            }
+            catch { appleStatus = error.localizedDescription }
+        } else if draft?.selectedDestination?.provider == .apple {
+            draft?.selectedDestination = nil
+        }
+        do {
+            let store = try HarnessConfiguration().googleStore()
+            let connection = try await store.status()
+            draft?.invalidateGoogleDestination(unlessAccountKey: connection?.accountKey)
+            grantedScopes = connection?.capabilities.scopes.sorted() ?? []
+            googleStatus = connection.map {
+                $0.requiresReconnect ? "Reconnect Google" : ($0.capabilities.canWrite ? "Google browsing + saving authorized" : "Google read-only; authorize saving in setup")
+            } ?? "Google not connected"
+            if connection?.requiresReconnect == true, draft?.selectedDestination?.provider == .google {
+                draft?.selectedDestination = nil
+            }
+            if draft?.selectedDestination?.provider == .google, connection?.requiresReconnect == false {
+                _ = try await loadGoogleCalendars(store: store, forceRefresh: false)
+            }
+        } catch {
+            googleStatus = error.localizedDescription
+            if draft?.selectedDestination?.provider == .google {
+                status = "The selected Google calendar could not be checked. Your edits are preserved. Retry listing calendars before Add."
+            }
+        }
+        do { try await persistCurrent() } catch { status = error.localizedDescription }
+    }
+
+    func selectSample(nearLimit: Bool, timed: Bool = false) {
+        run {
+            let codec = try HarnessConfiguration().codec()
+            let snapshot = try nearLimit ? codec.nearLimitSnapshot() : (timed ? M0Samples.timedSnapshot() : codec.sampleSnapshot())
+            self.insertionSnapshot = snapshot
+            self.canRetryInsertion = true
+            self.diagnostics = try self.describe(snapshot, codec: codec)
+            try await self.insertSnapshot(snapshot, codec: codec)
+        }
+    }
+
+    func retryInsertion() {
+        guard let snapshot = insertionSnapshot else { return }
+        run { try await self.insertSnapshot(snapshot, codec: HarnessConfiguration().codec()) }
+    }
+
+    private func insertSnapshot(_ snapshot: ShareSnapshot, codec: MessageCodec) async throws {
+        guard let insert else { throw MessagesProbeError.noConversation }
+        try await insert(snapshot, codec.encode(snapshot))
+        canRetryInsertion = false
+        status = "Inserted into compose. Review the draft, then tap Messages Send. Compare this digest on the receiving device."
+    }
+
+    func openLocalReceiveFixture() {
+        run {
+            let codec = try HarnessConfiguration().codec()
+            let snapshot = codec.sampleSnapshot()
+            self.draft = ReceiveDraft(snapshot: snapshot)
+            self.diagnostics = try self.describe(snapshot, codec: codec)
+            try await self.persistCurrent()
+            self.status = "Local receive fixture — this does not test message delivery. Choose a test calendar and tap Add."
+            await self.refreshConnectionsInternal()
+        }
+    }
+
+    func requestApple() {
+        run {
+            self.appleStatus = try await self.apple.requestFullAccess().explanation
+            let listed = try await self.apple.listCalendars()
+            self.calendars.removeAll { $0.provider == .apple }
+            self.calendars += listed.filter(\.isWritable)
+            self.draft?.revalidateDestination(in: listed, provider: .apple)
+            self.status = "Extension listed \(listed.count) device calendars, \(listed.filter(\.isWritable).count) writable. Record whether a permission prompt appeared."
+        }
+    }
+
+    func listGoogle(forceRefresh: Bool) {
+        run {
+            let store = try HarnessConfiguration().googleStore()
+            let listed = try await self.loadGoogleCalendars(store: store, forceRefresh: forceRefresh)
+            self.status = "Extension \(forceRefresh ? "forced fresh-token refresh and " : "")listed \(listed.count) Google calendars. \(listed.filter(\.isWritable).count) writable. No event was written."
+            try await self.persistCurrent()
+        }
+    }
+
+    private func loadGoogleCalendars(store: GoogleAuthorizationStore, forceRefresh: Bool) async throws -> [CalendarRef] {
+        calendars.removeAll { $0.provider == .google }
+        let token = try await store.accessToken(purpose: .browse, forceRefresh: forceRefresh)
+        let listed = try await GoogleCalendarProvider(authorizationStore: store).listCalendars(purpose: .browse)
+        let connection = try await store.status()
+        draft?.invalidateGoogleDestination(unlessAccountKey: connection?.accountKey)
+        guard let connection, !connection.requiresReconnect,
+              connection.accountKey == token.connection.accountKey,
+              listed.allSatisfy({ $0.accountKey == connection.accountKey }) else {
+            throw MessagesProbeError.changedDestination
+        }
+        calendars += listed.filter(\.isWritable)
+        draft?.revalidateDestination(in: listed, provider: .google)
+        grantedScopes = connection.capabilities.scopes.sorted()
+        googleStatus = connection.capabilities.canWrite ? "Google browsing + saving authorized" : "Google read-only; authorize saving in setup"
+        return listed
+    }
+
+    func setup(_ purpose: GoogleAuthorizationPurpose) {
+        run {
+            try await self.persistCurrent()
+            let configuration = try HarnessConfiguration()
+            var components = URLComponents()
+            components.scheme = configuration.setupScheme
+            components.host = "setup"
+            components.queryItems = [URLQueryItem(name: "purpose", value: purpose.rawValue)]
+            guard let url = components.url else { throw ConfigurationError.missing("setup URL scheme") }
+            let opened = await self.openSetup?(url) ?? false
+            self.status = opened
+                ? "Setup opened. After consent, return manually to this conversation. Review the destination and tap Add."
+                : "Open Calendar Share from the Home Screen, connect Google, then return to this conversation and reopen the card. Your edits are saved."
+        }
+    }
+
+    func edit(_ keyPath: WritableKeyPath<ReceiveDraft, String>, value: String) {
+        guard !busy, draft?.writeAttempted == false else { return }
+        draft?[keyPath: keyPath] = value
+        queuePersistence()
+    }
+
+    func selectDestination(_ calendar: CalendarRef) {
+        guard !busy, draft?.writeAttempted == false else { return }
+        draft?.selectedDestination = calendar
+        queuePersistence()
+    }
+
+    func add() {
+        guard canAdd else { return }
+        run {
+            guard var current = self.draft, let selected = current.selectedDestination else { throw MessagesProbeError.noDestination }
+            try current.effectiveEvent.validate()
+            // Validate authorization and live destination before marking this one-shot probe attempted.
+            let google: GoogleCalendarProvider?
+            let currentCalendars: [CalendarRef]
+            if selected.provider == .google {
+                let store = try HarnessConfiguration().googleStore()
+                let fresh = try await store.accessToken(purpose: .save)
+                guard fresh.connection.accountKey == selected.accountKey else {
+                    self.draft?.selectedDestination = nil
+                    try await self.persistCurrent()
+                    throw MessagesProbeError.changedDestination
+                }
+                google = GoogleCalendarProvider(authorizationStore: store)
+                currentCalendars = try await google!.listCalendars(purpose: .save)
+            } else {
+                google = nil
+                currentCalendars = try await self.apple.listCalendars(writableOnly: true)
+            }
+            guard currentCalendars.contains(where: { $0.id == selected.id && $0.isWritable }) else {
+                self.draft?.selectedDestination = nil
+                try await self.persistCurrent()
+                throw MessagesProbeError.changedDestination
+            }
+            current.writeAttempted = true
+            current.writeResult = "Save attempt recorded. If no confirmation appears, check the destination calendar. M0 blocks retries of uncertain writes."
+            self.draft = current
+            do {
+                try await self.persistCurrent() // Must succeed before contacting either provider.
+            } catch {
+                self.draft?.writeResult = "No calendar write was made. The save attempt could not be stored. Fix shared storage before starting another probe."
+                throw error
+            }
+            do {
+                if let google {
+                    let snapshot = ShareSnapshot(shareId: current.snapshot.shareId, createdAt: current.snapshot.createdAt, event: current.effectiveEvent)
+                    _ = try await google.createSampleCopy(snapshot: snapshot, destination: selected, operationID: UUID())
+                    self.draft?.writeResult = "Added to \(selected.displayName). Google confirmed creation of an independent copy."
+                } else {
+                    let result = try await self.apple.createCopy(event: current.effectiveEvent, destination: selected)
+                    self.draft?.writeResult = "Added to \(result.destinationName) in the device calendar store. Remote sync may still be pending. Availability: \(result.availabilityDescription)." + (result.hadUnexpectedAlarmsAfterSave ? " Unexpected alarms were observed — record this M0 blocker." : " No alarms observed on read-back.")
+                }
+            } catch {
+                self.draft?.writeResult = "No save confirmation was received. Check \(selected.displayName) before another test. M0 blocks another attempt for this pending probe."
+                self.status = error.localizedDescription
+                // The durable attempted flag already exists even if this message cannot be stored.
+                try? await self.persistCurrent()
+                return
+            }
+            do {
+                try await self.persistCurrent()
+                self.status = "Save confirmed. Record the observed calendar result in the M0 feasibility checklist."
+            } catch {
+                self.status = "The calendar confirmed this save, but its local confirmation could not be stored. Check the calendar before clearing pending state."
+            }
+        }
+    }
+
+    func closeReceive() {
+        run {
+            try await self.pendingStore().clear()
+            self.draft = nil
+            self.calendars = []
+            self.status = "Pending local receive cleared. Existing calendar copies and sent messages remain."
+        }
+    }
+
+    private func describe(_ snapshot: ShareSnapshot, codec: MessageCodec) throws -> String {
+        "Share ID: \(snapshot.shareId.uuidString)\nURL characters: \(try codec.encode(snapshot).absoluteString.count)/4500\nSHA-256: \(try codec.digest(snapshot))"
+    }
+
+    private func queuePersistence() {
+        let preceding = persistence
+        let frozen = draft
+        persistence = Task {
+            await preceding?.value
+            guard let frozen else { return }
+            do { try await pendingStore().save(frozen) }
+            catch { status = "Edits could not be preserved: \(error.localizedDescription)" }
+        }
+    }
+
+    private func persistCurrent() async throws {
+        await persistence?.value
+        if let draft { try await pendingStore().save(draft) }
+    }
+
+    private func run(_ operation: @escaping @MainActor () async throws -> Void) {
+        guard !busy else { return }
+        busy = true
+        Task {
+            await persistence?.value
+            defer { finishWork() }
+            do { try await operation() }
+            catch { status = error.localizedDescription }
+        }
+    }
+
+    private func finishWork() {
+        busy = false
+        if let activation = pendingActivation {
+            pendingActivation = nil
+            Task { await activate(messageURL: activation.messageURL) }
+        }
+    }
+}
+
+extension EventTime {
+    var probeDescription: String {
+        switch self {
+        case let .timed(start, end, startZone, endZone):
+            let dates = "\(start.formatted(date: .abbreviated, time: .shortened)) – \(end.formatted(date: .abbreviated, time: .shortened))"
+            return dates + " · device time" + (startZone.map { " · source \($0)" } ?? "") + (endZone.flatMap { $0 != startZone ? " → \($0)" : nil } ?? "")
+        case let .allDay(start, exclusiveEnd):
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+            if let end = try? exclusiveEnd.date(in: calendar.timeZone), let last = calendar.date(byAdding: .day, value: -1, to: end) {
+                let formatter = DateFormatter()
+                formatter.calendar = calendar
+                formatter.timeZone = calendar.timeZone
+                formatter.dateStyle = .medium
+                return "\(start) – \(formatter.string(from: last)) · all day"
+            }
+            return "\(start) · all day"
+        }
+    }
+}

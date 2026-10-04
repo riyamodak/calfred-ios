@@ -1,0 +1,12 @@
+// Deliberately unconfigured examples. Copy Local.xcconfig.example to Local.xcconfig.
+APP_BUNDLE_IDENTIFIER = com.example.CalendarShare
+MESSAGES_BUNDLE_IDENTIFIER = com.example.CalendarShare.Messages
+APP_GROUP_IDENTIFIER = group.com.example.CalendarShare
+KEYCHAIN_GROUP_SUFFIX = com.example.CalendarShare.shared
+SETUP_URL_SCHEME = calendarshare-m0-example
+GOOGLE_CLIENT_ID = REPLACE_ME.apps.googleusercontent.com
+GOOGLE_REDIRECT_SCHEME = com.googleusercontent.apps.REPLACE_ME
+// xcconfig treats double slash as a comment. Keep the empty expansion below.
+MESSAGE_BASE_URL = https:/$()/example.invalid/calendar-share
+DEVELOPMENT_TEAM =
+#include? "Local.xcconfig"

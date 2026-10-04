@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Calendar Share M0</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Choose calendar events to share and select where to save events you receive.</string>
+	<key>CalendarShareAppGroup</key>
+	<string>$(APP_GROUP_IDENTIFIER)</string>
+	<key>CalendarShareKeychainGroup</key>
+	<string>$(AppIdentifierPrefix)$(KEYCHAIN_GROUP_SUFFIX)</string>
+	<key>CalendarShareSetupScheme</key>
+	<string>$(SETUP_URL_SCHEME)</string>
+	<key>CalendarShareGoogleClientID</key>
+	<string>$(GOOGLE_CLIENT_ID)</string>
+	<key>CalendarShareGoogleRedirectScheme</key>
+	<string>$(GOOGLE_REDIRECT_SCHEME)</string>
+	<key>CalendarShareMessageBaseURL</key>
+	<string>$(MESSAGE_BASE_URL)</string>
+	<key>CFBundlePackageType</key>
+	<string>XPC!</string>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.message-payload-provider</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).MessagesViewController</string>
+	</dict>
+</dict>
+</plist>

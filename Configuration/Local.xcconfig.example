@@ -1,0 +1,10 @@
+// Supply identifiers registered to YOUR team. This file contains no client secret.
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+APP_BUNDLE_IDENTIFIER = your.owned.identifier.CalendarShare
+MESSAGES_BUNDLE_IDENTIFIER = your.owned.identifier.CalendarShare.Messages
+APP_GROUP_IDENTIFIER = group.your.owned.identifier.CalendarShare
+KEYCHAIN_GROUP_SUFFIX = your.owned.identifier.CalendarShare.shared
+SETUP_URL_SCHEME = your-unique-calendarshare-setup
+GOOGLE_CLIENT_ID = YOUR_IOS_CLIENT_ID.apps.googleusercontent.com
+GOOGLE_REDIRECT_SCHEME = com.googleusercontent.apps.YOUR_IOS_CLIENT_ID
+MESSAGE_BASE_URL = https:/$()/YOUR_OWNED_HOST/calendar-share

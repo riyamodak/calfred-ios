@@ -1,0 +1,505 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		09D58A730DCF9833830D543C /* MessagesExtension/MessagesHarnessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF3366BCEC24467BA725F56 /* MessagesExtension/MessagesHarnessView.swift */; };
+		0ABB391F69E9E32950B52ED4 /* EventKitProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 4F4B9FD0094664EAE5749F50 /* EventKitProvider */; };
+		3301C37A0149B6A49B7C12C1 /* CalendarDomain in Frameworks */ = {isa = PBXBuildFile; productRef = B5949BEC589BAB1D31F0C172 /* CalendarDomain */; };
+		3A5AB91F793AA04E667CE493 /* MessageCodec in Frameworks */ = {isa = PBXBuildFile; productRef = 40B6F908597CA598DB99E008 /* MessageCodec */; };
+		4F1851D999EE4FEC1CC77FB6 /* GoogleCalendarProvider in Frameworks */ = {isa = PBXBuildFile; productRef = BD5E77BE635E5B08425BAB28 /* GoogleCalendarProvider */; };
+		629CDD6E544982C575F0A376 /* CalendarShareMessages.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 50603D47F4C74C36BBF7245F /* CalendarShareMessages.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		62C196CD9126710551828BEB /* MessagesExtension/MessagesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CEF408FB4D788286EF8EFE /* MessagesExtension/MessagesModel.swift */; };
+		8476A05D00388377BAE397CD /* CalendarDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 28AAA26F76DDAC3CF39C95E1 /* CalendarDomain */; };
+		84FC6C76735C285498403D01 /* MessagesExtension/MessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E84399E2C99CACFEA14DFED4 /* MessagesExtension/MessagesViewController.swift */; };
+		8E2D52656BE36528CC288864 /* AuthorizationStore in Frameworks */ = {isa = PBXBuildFile; productRef = 6F03A43FBA5E6255BCB98039 /* AuthorizationStore */; };
+		A93D557FB47478D566C7E5EB /* Support/HarnessConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741DA37CDB63D52FAF7339C2 /* Support/HarnessConfiguration.swift */; };
+		AB8D4AC603159D80A6F872B8 /* GoogleCalendarProvider in Frameworks */ = {isa = PBXBuildFile; productRef = CB6A99353946565A9E5FB703 /* GoogleCalendarProvider */; };
+		AD6224754F3F2F5D28C9FB59 /* SharedStore in Frameworks */ = {isa = PBXBuildFile; productRef = 1305F006B705D1F7B26AB707 /* SharedStore */; };
+		AEA33DC8787B54C7D6D87C05 /* App/CalendarShareApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A7C8D42E551CC5B81E94B0 /* App/CalendarShareApp.swift */; };
+		B0095D391EDF8194D5185DD7 /* AuthorizationStore in Frameworks */ = {isa = PBXBuildFile; productRef = BDD871A464FCC5BB60645A6F /* AuthorizationStore */; };
+		CE1A4CB48EE50319AD677432 /* SharedStore in Frameworks */ = {isa = PBXBuildFile; productRef = C687CB96DA9D9A0F98F236E7 /* SharedStore */; };
+		D76AB97BBB105CF44E7D1E67 /* Support/HarnessConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741DA37CDB63D52FAF7339C2 /* Support/HarnessConfiguration.swift */; };
+		D9F109FB1046DA7F3A67D860 /* AppAuth in Frameworks */ = {isa = PBXBuildFile; productRef = F4B3B800DE6F20E9543EC32B /* AppAuth */; };
+		F636D5AB2573F9336548706D /* MessageCodec in Frameworks */ = {isa = PBXBuildFile; productRef = 67D814DFCBF654138D4875E9 /* MessageCodec */; };
+		F663496DB57A09E48B01380C /* App/GoogleAuthorizationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7387F584952887E698B51FF2 /* App/GoogleAuthorizationController.swift */; };
+		FA1DB37908E801C6E714FC81 /* EventKitProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 47079F2BDE7CE322D69113AF /* EventKitProvider */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D799BAE6088A90139B415FCC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E1707806668551B5AD40A63B;
+			remoteInfo = CalendarShareMessages;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		CFFF27C96089B93150F3553B /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				629CDD6E544982C575F0A376 /* CalendarShareMessages.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		50603D47F4C74C36BBF7245F /* CalendarShareMessages.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CalendarShareMessages.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		6B3CC4A0F052F3D586275275 /* Configuration/Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Base.xcconfig; sourceTree = "<group>"; };
+		7387F584952887E698B51FF2 /* App/GoogleAuthorizationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/GoogleAuthorizationController.swift; sourceTree = "<group>"; };
+		741DA37CDB63D52FAF7339C2 /* Support/HarnessConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support/HarnessConfiguration.swift; sourceTree = "<group>"; };
+		8E264B3640255756C3BEE20B /* CalendarShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalendarShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		96CEF408FB4D788286EF8EFE /* MessagesExtension/MessagesModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesExtension/MessagesModel.swift; sourceTree = "<group>"; };
+		9BF3366BCEC24467BA725F56 /* MessagesExtension/MessagesHarnessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesExtension/MessagesHarnessView.swift; sourceTree = "<group>"; };
+		A6A7C8D42E551CC5B81E94B0 /* App/CalendarShareApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/CalendarShareApp.swift; sourceTree = "<group>"; };
+		E84399E2C99CACFEA14DFED4 /* MessagesExtension/MessagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesExtension/MessagesViewController.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7B00FF7994F3CF37F6540104 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8476A05D00388377BAE397CD /* CalendarDomain in Frameworks */,
+				3A5AB91F793AA04E667CE493 /* MessageCodec in Frameworks */,
+				CE1A4CB48EE50319AD677432 /* SharedStore in Frameworks */,
+				B0095D391EDF8194D5185DD7 /* AuthorizationStore in Frameworks */,
+				4F1851D999EE4FEC1CC77FB6 /* GoogleCalendarProvider in Frameworks */,
+				0ABB391F69E9E32950B52ED4 /* EventKitProvider in Frameworks */,
+				D9F109FB1046DA7F3A67D860 /* AppAuth in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E74D84993DC94852CE67F0B9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3301C37A0149B6A49B7C12C1 /* CalendarDomain in Frameworks */,
+				F636D5AB2573F9336548706D /* MessageCodec in Frameworks */,
+				AD6224754F3F2F5D28C9FB59 /* SharedStore in Frameworks */,
+				8E2D52656BE36528CC288864 /* AuthorizationStore in Frameworks */,
+				AB8D4AC603159D80A6F872B8 /* GoogleCalendarProvider in Frameworks */,
+				FA1DB37908E801C6E714FC81 /* EventKitProvider in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B28B7AF69320201D1CF206EB = {
+			isa = PBXGroup;
+			children = (
+				6B3CC4A0F052F3D586275275 /* Configuration/Base.xcconfig */,
+				A6A7C8D42E551CC5B81E94B0 /* App/CalendarShareApp.swift */,
+				7387F584952887E698B51FF2 /* App/GoogleAuthorizationController.swift */,
+				9BF3366BCEC24467BA725F56 /* MessagesExtension/MessagesHarnessView.swift */,
+				96CEF408FB4D788286EF8EFE /* MessagesExtension/MessagesModel.swift */,
+				E84399E2C99CACFEA14DFED4 /* MessagesExtension/MessagesViewController.swift */,
+				741DA37CDB63D52FAF7339C2 /* Support/HarnessConfiguration.swift */,
+				FBDC4F23F93125BBEEAE800C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FBDC4F23F93125BBEEAE800C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8E264B3640255756C3BEE20B /* CalendarShare.app */,
+				50603D47F4C74C36BBF7245F /* CalendarShareMessages.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		46283F6D46DC597B95D78849 /* CalendarShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FBEEF324D77130BEB7BBFF34 /* Build configuration list for PBXNativeTarget "CalendarShare" */;
+			buildPhases = (
+				2D97E058F563C10BE8E9B485 /* Sources */,
+				7B00FF7994F3CF37F6540104 /* Frameworks */,
+				579EC5936FBE3ACA13A4A635 /* Resources */,
+				CFFF27C96089B93150F3553B /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DE58E2B17C19600779694943 /* PBXTargetDependency */,
+			);
+			name = CalendarShare;
+			packageProductDependencies = (
+				28AAA26F76DDAC3CF39C95E1 /* CalendarDomain */,
+				40B6F908597CA598DB99E008 /* MessageCodec */,
+				C687CB96DA9D9A0F98F236E7 /* SharedStore */,
+				BDD871A464FCC5BB60645A6F /* AuthorizationStore */,
+				BD5E77BE635E5B08425BAB28 /* GoogleCalendarProvider */,
+				4F4B9FD0094664EAE5749F50 /* EventKitProvider */,
+				F4B3B800DE6F20E9543EC32B /* AppAuth */,
+			);
+			productName = CalendarShare;
+			productReference = 8E264B3640255756C3BEE20B /* CalendarShare.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E1707806668551B5AD40A63B /* CalendarShareMessages */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4560740F29503F8DC4F84EA /* Build configuration list for PBXNativeTarget "CalendarShareMessages" */;
+			buildPhases = (
+				3584FE24459BCE5A7B7D43A2 /* Sources */,
+				E74D84993DC94852CE67F0B9 /* Frameworks */,
+				3582CB069485AB12C14C236D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CalendarShareMessages;
+			packageProductDependencies = (
+				B5949BEC589BAB1D31F0C172 /* CalendarDomain */,
+				67D814DFCBF654138D4875E9 /* MessageCodec */,
+				1305F006B705D1F7B26AB707 /* SharedStore */,
+				6F03A43FBA5E6255BCB98039 /* AuthorizationStore */,
+				CB6A99353946565A9E5FB703 /* GoogleCalendarProvider */,
+				47079F2BDE7CE322D69113AF /* EventKitProvider */,
+			);
+			productName = CalendarShareMessages;
+			productReference = 50603D47F4C74C36BBF7245F /* CalendarShareMessages.appex */;
+			productType = "com.apple.product-type.app-extension.messages";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		98F54143AB4E86B28C3AFEE0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					46283F6D46DC597B95D78849 = {
+						CreatedOnToolsVersion = 15.0.1;
+					};
+					E1707806668551B5AD40A63B = {
+						CreatedOnToolsVersion = 15.0.1;
+					};
+				};
+			};
+			buildConfigurationList = 862894B703A6DEDF96A9DD6C /* Build configuration list for PBXProject "CalendarShare" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B28B7AF69320201D1CF206EB;
+			packageReferences = (
+				CF21FADD42EAB8F8303A3895 /* XCLocalSwiftPackageReference "Packages/CalendarShareKit" */,
+				E52D9E48480A76EC4C044951 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */,
+			);
+			productRefGroup = FBDC4F23F93125BBEEAE800C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E1707806668551B5AD40A63B /* CalendarShareMessages */,
+				46283F6D46DC597B95D78849 /* CalendarShare */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3582CB069485AB12C14C236D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		579EC5936FBE3ACA13A4A635 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2D97E058F563C10BE8E9B485 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AEA33DC8787B54C7D6D87C05 /* App/CalendarShareApp.swift in Sources */,
+				F663496DB57A09E48B01380C /* App/GoogleAuthorizationController.swift in Sources */,
+				D76AB97BBB105CF44E7D1E67 /* Support/HarnessConfiguration.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3584FE24459BCE5A7B7D43A2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				09D58A730DCF9833830D543C /* MessagesExtension/MessagesHarnessView.swift in Sources */,
+				62C196CD9126710551828BEB /* MessagesExtension/MessagesModel.swift in Sources */,
+				84FC6C76735C285498403D01 /* MessagesExtension/MessagesViewController.swift in Sources */,
+				A93D557FB47478D566C7E5EB /* Support/HarnessConfiguration.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DE58E2B17C19600779694943 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E1707806668551B5AD40A63B /* CalendarShareMessages */;
+			targetProxy = D799BAE6088A90139B415FCC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		247A9F15CA39FE61E1898D49 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Configuration/CalendarShare.entitlements;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = SHAJ36X63U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MessagesExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESSAGES_BUNDLE_IDENTIFIER)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		467F7DF0497EA4B0C89E4B08 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CODE_SIGN_ENTITLEMENTS = Configuration/CalendarShare.entitlements;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = SHAJ36X63U;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		86A97E4D1600179362AD0238 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CODE_SIGN_ENTITLEMENTS = Configuration/CalendarShare.entitlements;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = SHAJ36X63U;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		89E1FD6268CC0F221A2BE178 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6B3CC4A0F052F3D586275275 /* Configuration/Base.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.0.1;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		CB0C1E1144F595AB8B635145 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Configuration/CalendarShare.entitlements;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = SHAJ36X63U;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MessagesExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESSAGES_BUNDLE_IDENTIFIER)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		E6DE6C99132752C914FEF632 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6B3CC4A0F052F3D586275275 /* Configuration/Base.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.0.1;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		862894B703A6DEDF96A9DD6C /* Build configuration list for PBXProject "CalendarShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				89E1FD6268CC0F221A2BE178 /* Debug */,
+				E6DE6C99132752C914FEF632 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4560740F29503F8DC4F84EA /* Build configuration list for PBXNativeTarget "CalendarShareMessages" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CB0C1E1144F595AB8B635145 /* Debug */,
+				247A9F15CA39FE61E1898D49 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FBEEF324D77130BEB7BBFF34 /* Build configuration list for PBXNativeTarget "CalendarShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				86A97E4D1600179362AD0238 /* Debug */,
+				467F7DF0497EA4B0C89E4B08 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		CF21FADD42EAB8F8303A3895 /* XCLocalSwiftPackageReference "Packages/CalendarShareKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/CalendarShareKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E52D9E48480A76EC4C044951 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/openid/AppAuth-iOS.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.7.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1305F006B705D1F7B26AB707 /* SharedStore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SharedStore;
+		};
+		28AAA26F76DDAC3CF39C95E1 /* CalendarDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CalendarDomain;
+		};
+		40B6F908597CA598DB99E008 /* MessageCodec */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MessageCodec;
+		};
+		47079F2BDE7CE322D69113AF /* EventKitProvider */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = EventKitProvider;
+		};
+		4F4B9FD0094664EAE5749F50 /* EventKitProvider */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = EventKitProvider;
+		};
+		67D814DFCBF654138D4875E9 /* MessageCodec */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MessageCodec;
+		};
+		6F03A43FBA5E6255BCB98039 /* AuthorizationStore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AuthorizationStore;
+		};
+		B5949BEC589BAB1D31F0C172 /* CalendarDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CalendarDomain;
+		};
+		BD5E77BE635E5B08425BAB28 /* GoogleCalendarProvider */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GoogleCalendarProvider;
+		};
+		BDD871A464FCC5BB60645A6F /* AuthorizationStore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AuthorizationStore;
+		};
+		C687CB96DA9D9A0F98F236E7 /* SharedStore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SharedStore;
+		};
+		CB6A99353946565A9E5FB703 /* GoogleCalendarProvider */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = GoogleCalendarProvider;
+		};
+		F4B3B800DE6F20E9543EC32B /* AppAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E52D9E48480A76EC4C044951 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */;
+			productName = AppAuth;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+}
