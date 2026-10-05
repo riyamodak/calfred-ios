@@ -16,11 +16,16 @@ final class MessagesModel: ObservableObject {
     @Published var appleLoading = false
     @Published var appleError: String?
     @Published var googleStatus = "Google not checked"
+    @Published var googleCalendars: [CalendarRef]?
+    @Published var googleLoading = false
+    @Published var googleError: String?
+    @Published var googleCanWrite = false
     @Published var grantedScopes: [String] = []
     @Published var diagnostics = ""
     @Published var busy = false
     @Published var canRetryInsertion = false
     @Published var sampleError: String?
+    @Published var insertionError: String?
     var insert: ((ShareSnapshot, URL) async throws -> Void)?
     var openSetup: ((URL) async -> Bool)?
     var expandPresentation: (() -> Void)?
@@ -32,7 +37,13 @@ final class MessagesModel: ObservableObject {
 
     var canAdd: Bool {
         guard !busy, let draft, !draft.writeAttempted, let selected = draft.selectedDestination else { return false }
+        if selected.provider == .google && !googleCanWrite { return false }
         return calendars.contains { $0.id == selected.id && $0.isWritable }
+    }
+
+    var messageConfigurationError: String? {
+        do { _ = try HarnessConfiguration().codec(); return nil }
+        catch { return error.localizedDescription }
     }
 
     private func pendingStore() throws -> PendingReceiveStore {
@@ -82,6 +93,9 @@ final class MessagesModel: ObservableObject {
     private func refreshConnectionsInternal() async {
         // Rebuild choices rather than enabling Add from a stale in-memory list.
         calendars = []
+        googleCalendars = nil
+        googleError = nil
+        googleCanWrite = false
         await loadAppleCalendars()
         do {
             let store = try HarnessConfiguration().googleStore()
@@ -94,11 +108,12 @@ final class MessagesModel: ObservableObject {
             if connection?.requiresReconnect == true, draft?.selectedDestination?.provider == .google {
                 draft?.selectedDestination = nil
             }
-            if draft?.selectedDestination?.provider == .google, connection?.requiresReconnect == false {
+            if connection?.requiresReconnect == false {
                 _ = try await loadGoogleCalendars(store: store, forceRefresh: false)
             }
         } catch {
             googleStatus = error.localizedDescription
+            googleError = error.localizedDescription
             if draft?.selectedDestination?.provider == .google {
                 status = "The selected Google calendar could not be checked. Your edits are preserved. Retry listing calendars before Add."
             }
@@ -108,18 +123,30 @@ final class MessagesModel: ObservableObject {
 
     func selectSample(nearLimit: Bool, timed: Bool = false) {
         run {
-            let codec = try HarnessConfiguration().codec()
-            let snapshot = try nearLimit ? codec.nearLimitSnapshot() : (timed ? M0Samples.timedSnapshot() : codec.sampleSnapshot())
-            self.insertionSnapshot = snapshot
-            self.canRetryInsertion = true
-            self.diagnostics = try self.describe(snapshot, codec: codec)
-            try await self.insertSnapshot(snapshot, codec: codec)
+            self.insertionError = nil
+            self.insertionSnapshot = nil
+            self.canRetryInsertion = false
+            do {
+                let codec = try HarnessConfiguration().codec()
+                let snapshot = try nearLimit ? codec.nearLimitSnapshot() : (timed ? M0Samples.timedSnapshot() : codec.sampleSnapshot())
+                self.insertionSnapshot = snapshot
+                self.canRetryInsertion = true
+                self.diagnostics = try self.describe(snapshot, codec: codec)
+                try await self.insertSnapshot(snapshot, codec: codec)
+            } catch {
+                self.insertionError = error.localizedDescription
+                throw error
+            }
         }
     }
 
     func retryInsertion() {
         guard let snapshot = insertionSnapshot else { return }
-        run { try await self.insertSnapshot(snapshot, codec: HarnessConfiguration().codec()) }
+        run {
+            self.insertionError = nil
+            do { try await self.insertSnapshot(snapshot, codec: HarnessConfiguration().codec()) }
+            catch { self.insertionError = error.localizedDescription; throw error }
+        }
     }
 
     private func insertSnapshot(_ snapshot: ShareSnapshot, codec: MessageCodec) async throws {
@@ -183,15 +210,30 @@ final class MessagesModel: ObservableObject {
 
     func listGoogle(forceRefresh: Bool) {
         run {
-            let store = try HarnessConfiguration().googleStore()
-            let listed = try await self.loadGoogleCalendars(store: store, forceRefresh: forceRefresh)
+            let listed: [CalendarRef]
+            do {
+                let store = try HarnessConfiguration().googleStore()
+                listed = try await self.loadGoogleCalendars(store: store, forceRefresh: forceRefresh)
+            } catch {
+                self.googleCalendars = nil
+                self.googleCanWrite = false
+                self.calendars.removeAll { $0.provider == .google }
+                self.googleError = error.localizedDescription
+                self.googleStatus = "Google calendars could not be loaded."
+                throw error
+            }
             self.status = "Extension \(forceRefresh ? "forced fresh-token refresh and " : "")listed \(listed.count) Google calendars. \(listed.filter(\.isWritable).count) writable. No event was written."
             try await self.persistCurrent()
         }
     }
 
     private func loadGoogleCalendars(store: GoogleAuthorizationStore, forceRefresh: Bool) async throws -> [CalendarRef] {
+        googleLoading = true
+        googleError = nil
+        googleCalendars = nil
+        googleCanWrite = false
         calendars.removeAll { $0.provider == .google }
+        defer { googleLoading = false }
         let token = try await store.accessToken(purpose: .browse, forceRefresh: forceRefresh)
         let listed = try await GoogleCalendarProvider(authorizationStore: store).listCalendars(purpose: .browse)
         let connection = try await store.status()
@@ -202,6 +244,8 @@ final class MessagesModel: ObservableObject {
             throw MessagesProbeError.changedDestination
         }
         calendars += listed.filter(\.isWritable)
+        googleCalendars = listed
+        googleCanWrite = connection.capabilities.canWrite
         draft?.revalidateDestination(in: listed, provider: .google)
         grantedScopes = connection.capabilities.scopes.sorted()
         googleStatus = connection.capabilities.canWrite ? "Google browsing + saving authorized" : "Google read-only; authorize saving in setup"

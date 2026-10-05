@@ -1,9 +1,17 @@
 # Google M0 probe
 
-Implementation is a feasibility harness. No Google account, signed-device Keychain sharing,
-consent path, Calendar API call, or extension refresh has been verified on a physical device
-by this implementation session. Complete the device result table in the main feasibility
-report before considering M0 proved.
+Implementation is a feasibility harness. On October 5, the user reported successful Google
+browsing sign-in followed by the saving-access upgrade on their physical iPhone. The user subsequently confirmed that Google calendars are visibly listed after the UI fix.
+Google writes, actual scopes, and extension refresh after expiry remain unverified.
+
+Both targets now show a Google inventory outside the setup disclosure, with calendar names,
+read-only/writable labels, and loading/empty/error states. The extension reloads a connected
+account on activation; **List Google calendars** and **Force refresh + list in extension**
+also populate the inventory. In a receive, writable calendars appear in **Choose a calendar**;
+the Google section keeps its count and controls. Add remains disabled without verified saving
+access. No event is written by listing or consent. The user confirmed the visible inventory; empty/error states and forced-refresh results remain unverified.
+
+Complete the device result table in the main feasibility report before considering M0 proved.
 
 ## Implemented
 

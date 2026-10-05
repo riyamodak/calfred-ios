@@ -20,8 +20,12 @@ struct CalendarShareApp: App {
                                           isLoading: model.appleLoading, error: model.appleError,
                                           onAction: model.requestApple)
                     Section("Google · Direct connection") {
+                        Text(model.googleStatus)
+                        GoogleCalendarInventory(calendars: model.googleCalendars, isLoading: model.googleLoading,
+                                                error: model.googleError, canWrite: model.googleCanWrite)
+                        Button("List Google calendars") { model.refreshProbe(forceRefresh: false) }
+                        Button("Force refresh and list calendars") { model.refreshProbe(forceRefresh: true) }
                         DisclosureGroup("Set up Google") {
-                            Text(model.googleStatus)
                             if let purpose = model.requestedPurpose {
                                 Text(purpose == .save ? "Messages requested permission to save. After connecting, return manually and tap Add." : "Messages requested permission to browse.")
                             }
@@ -29,7 +33,6 @@ struct CalendarShareApp: App {
                             Button("Connect / reauthorize for saving") { model.connect(.save) }
                             Text("Saving consent permits Google event creation, editing, and deletion. This harness only creates copies after Add; it never edits or deletes your existing events.")
                                 .font(.caption)
-                            Button("Force refresh and list calendars") { model.refreshProbe() }
                             Button("Disconnect Google", role: .destructive) { model.disconnect() }
                             if !model.scopes.isEmpty {
                                 DisclosureGroup("Actually granted scopes") {
@@ -73,6 +76,11 @@ final class CompanionModel: ObservableObject {
     @Published var appleLoading = false
     @Published var appleError: String?
     @Published var googleStatus = "Not checked"
+    @Published var googleCalendars: [CalendarRef]?
+    @Published var googleLoading = false
+    @Published var googleError: String?
+    @Published var googleCanWrite = false
+    private var googleAccountKey: String?
     @Published var scopes: [String] = []
     @Published var message = ""
     @Published var busy = false
@@ -85,6 +93,9 @@ final class CompanionModel: ObservableObject {
         do {
             let store = try HarnessConfiguration().googleStore()
             if let connection = try await store.status() {
+                if googleAccountKey != connection.accountKey || connection.requiresReconnect { googleCalendars = nil }
+                googleAccountKey = connection.accountKey
+                googleCanWrite = connection.capabilities.canWrite && !connection.requiresReconnect
                 googleStatus = connection.requiresReconnect ? "Reconnect required" : (connection.capabilities.canWrite ? "Browsing and saving authorized" : "Browsing authorized")
                 scopes = connection.capabilities.scopes.sorted()
                 if let expiry = connection.accessTokenExpiresAt {
@@ -94,8 +105,15 @@ final class CompanionModel: ObservableObject {
             } else {
                 googleStatus = "Not connected"
                 scopes = []
+                googleCalendars = nil
+                googleAccountKey = nil
+                googleCanWrite = false
             }
-        } catch { googleStatus = error.localizedDescription }
+        } catch {
+            googleStatus = error.localizedDescription
+            googleCalendars = nil
+            googleCanWrite = false
+        }
     }
 
     func requestApple() {
@@ -147,12 +165,29 @@ final class CompanionModel: ObservableObject {
         }
     }
 
-    func refreshProbe() {
+    func refreshProbe(forceRefresh: Bool) {
         run {
-            let store = try HarnessConfiguration().googleStore()
-            _ = try await store.accessToken(purpose: .browse, forceRefresh: true)
-            let calendars = try await GoogleCalendarProvider(authorizationStore: store).listCalendars(purpose: .browse)
-            self.message = "Companion refresh succeeded; listed \(calendars.count) calendars. Repeat this probe inside Messages after expiry and a cold launch."
+            self.googleLoading = true
+            self.googleError = nil
+            self.googleCalendars = nil
+            defer { self.googleLoading = false }
+            do {
+                let store = try HarnessConfiguration().googleStore()
+                let token = try await store.accessToken(purpose: .browse, forceRefresh: forceRefresh)
+                let calendars = try await GoogleCalendarProvider(authorizationStore: store).listCalendars(purpose: .browse)
+                guard let connection = try await store.status(), !connection.requiresReconnect,
+                      connection.accountKey == token.connection.accountKey,
+                      calendars.allSatisfy({ $0.accountKey == connection.accountKey }) else {
+                    throw GoogleCalendarError.accountChanged
+                }
+                self.googleCalendars = calendars
+                self.googleAccountKey = connection.accountKey
+                self.googleCanWrite = connection.capabilities.canWrite
+                self.message = "Companion \(forceRefresh ? "forced a token refresh and " : "")listed \(calendars.count) calendars. Repeat this probe inside Messages after expiry and a cold launch."
+            } catch {
+                self.googleError = error.localizedDescription
+                throw error
+            }
             await self.reload()
         }
     }

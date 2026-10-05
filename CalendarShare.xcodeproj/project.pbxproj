@@ -30,6 +30,8 @@
 		F636D5AB2573F9336548706D /* MessageCodec in Frameworks */ = {isa = PBXBuildFile; productRef = 67D814DFCBF654138D4875E9 /* MessageCodec */; };
 		F663496DB57A09E48B01380C /* App/GoogleAuthorizationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7387F584952887E698B51FF2 /* App/GoogleAuthorizationController.swift */; };
 		FA1DB37908E801C6E714FC81 /* EventKitProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 47079F2BDE7CE322D69113AF /* EventKitProvider */; };
+		CF32E899D75734E459CA927D /* Support/GoogleCalendarInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E3AFDC6671C3D7992DC83 /* Support/GoogleCalendarInventory.swift */; };
+		610C3D932DC211695035165B /* Support/GoogleCalendarInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D5E3AFDC6671C3D7992DC83 /* Support/GoogleCalendarInventory.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +69,7 @@
 		9BF3366BCEC24467BA725F56 /* MessagesExtension/MessagesHarnessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesExtension/MessagesHarnessView.swift; sourceTree = "<group>"; };
 		A6A7C8D42E551CC5B81E94B0 /* App/CalendarShareApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/CalendarShareApp.swift; sourceTree = "<group>"; };
 		E84399E2C99CACFEA14DFED4 /* MessagesExtension/MessagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesExtension/MessagesViewController.swift; sourceTree = "<group>"; };
+		9D5E3AFDC6671C3D7992DC83 /* Support/GoogleCalendarInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support/GoogleCalendarInventory.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +114,7 @@
 				E84399E2C99CACFEA14DFED4 /* MessagesExtension/MessagesViewController.swift */,
 				741DA37CDB63D52FAF7339C2 /* Support/HarnessConfiguration.swift */,
 				054B342BB500F2EDA94FEDCD /* Support/AppleCalendarsSection.swift */,
+				9D5E3AFDC6671C3D7992DC83 /* Support/GoogleCalendarInventory.swift */,
 				FBDC4F23F93125BBEEAE800C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -245,6 +249,7 @@
 				F663496DB57A09E48B01380C /* App/GoogleAuthorizationController.swift in Sources */,
 				D76AB97BBB105CF44E7D1E67 /* Support/HarnessConfiguration.swift in Sources */,
 				206D99A5537EF67B7995164B /* Support/AppleCalendarsSection.swift in Sources */,
+				CF32E899D75734E459CA927D /* Support/GoogleCalendarInventory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +262,7 @@
 				84FC6C76735C285498403D01 /* MessagesExtension/MessagesViewController.swift in Sources */,
 				A93D557FB47478D566C7E5EB /* Support/HarnessConfiguration.swift in Sources */,
 				94636AB2369059FB78587CEB /* Support/AppleCalendarsSection.swift in Sources */,
+				610C3D932DC211695035165B /* Support/GoogleCalendarInventory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

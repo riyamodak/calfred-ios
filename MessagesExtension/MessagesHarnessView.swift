@@ -38,7 +38,12 @@ struct MessagesHarnessView: View {
                                     }
                                     .accessibilityAddTraits(draft.selectedDestination?.id == calendar.id ? .isSelected : [])
                                 }
-                                if let selected = draft.selectedDestination { Text("Selected: \(selected.displayName)") }
+                                if let selected = draft.selectedDestination {
+                                    Text("Selected: \(selected.displayName)")
+                                    if selected.provider == .google && !model.googleCanWrite {
+                                        Text("Authorize saving in Google setup, then reload calendars before Add.")
+                                    }
+                                }
                             }
                             Section {
                                 DisclosureGroup("Edit this copy") {
@@ -75,22 +80,37 @@ struct MessagesHarnessView: View {
                             DisclosureGroup("Send sample cards") {
                                 Text("These synthetic events test how a card arrives on another iPhone. A button inserts a draft; you then tap the normal Messages Send button.")
                                     .font(.caption)
-                                Button("Insert all-day sample card") { model.selectSample(nearLimit: false) }
-                                Button("Insert timed / daylight-saving sample") { model.selectSample(nearLimit: false, timed: true) }
-                                Button("Insert large Unicode sample") { model.selectSample(nearLimit: true) }
-                                if model.canRetryInsertion { Button("Retry insertion") { model.retryInsertion() } }
+                                if let error = model.messageConfigurationError {
+                                    Label("Set up the message help link first", systemImage: "link")
+                                    Text(error).textSelection(.enabled)
+                                    Text("Use an HTTPS installation/help page you control. Set MESSAGE_BASE_URL on both phones to the same URL, then rebuild. See Configuration/help-page.html for a static page template.")
+                                        .font(.caption)
+                                }
+                                Group {
+                                    Button("Insert all-day sample card") { model.selectSample(nearLimit: false) }
+                                    Button("Insert timed / daylight-saving sample") { model.selectSample(nearLimit: false, timed: true) }
+                                    Button("Insert large Unicode sample") { model.selectSample(nearLimit: true) }
+                                    if model.canRetryInsertion { Button("Retry insertion") { model.retryInsertion() } }
+                                }
+                                .disabled(model.messageConfigurationError != nil)
+                                if let error = model.insertionError {
+                                    Text(error).foregroundStyle(.red).textSelection(.enabled)
+                                }
                                 Text("Start with the all-day sample. The other cards test time changes and a message close to the size limit. Configure the owned HTTPS help URL before these tests.")
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                         }
                     }
                     Section("Google · Direct connection") {
+                        Text(model.googleStatus)
+                        GoogleCalendarInventory(calendars: model.googleCalendars, isLoading: model.googleLoading,
+                                                error: model.googleError, canWrite: model.googleCanWrite,
+                                                showCalendars: model.draft == nil)
+                        Button("List Google calendars") { model.listGoogle(forceRefresh: false) }
+                        Button("Force refresh + list in extension") { model.listGoogle(forceRefresh: true) }
                         DisclosureGroup("Set up Google") {
-                            Text(model.googleStatus)
                             Button("Open setup for browsing") { model.setup(.browse) }
                             Button("Open setup for saving / upgrade") { model.setup(.save) }
-                            Button("List Google calendars") { model.listGoogle(forceRefresh: false) }
-                            Button("Force refresh + list in extension") { model.listGoogle(forceRefresh: true) }
                             Text("If setup cannot open, launch Calendar Share from the Home Screen. Return manually to this conversation after consent.").font(.caption)
                             if !model.grantedScopes.isEmpty {
                                 DisclosureGroup("Actually granted scopes") {

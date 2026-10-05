@@ -27,6 +27,10 @@ Both targets include `NSCalendarsFullAccessUsageDescription`; opening the app or
 
 For Apple-first testing, start with the visible calendar list. Next, **Open sample to test saving** in the extension opens a synthetic received event; choose a writable calendar and tap Add. This local write test requires the shared App Group, but no Google client or HTTPS help URL. The **Send sample cards** disclosure contains the separate two-device delivery tests, which do require the owned HTTPS URL. **Reset test state** clears only the pending local sample, never a saved calendar event.
 
+Google calendar names now appear directly in the Google section after listing, including read-only calendars. The extension loads the connected account when activated; both targets expose explicit list/refresh buttons with inline errors. A pending receive offers writable destinations in its picker, and Google Add requires saving authorization.
+
+If all three message sample buttons report `MESSAGE_BASE_URL`, configure the separate HTTPS installation/help link first. It is not a Google OAuth redirect or Calendar API endpoint. Host the script-free `Configuration/help-page.html` template at a page you control, fill in the installation/support details, set its URL using the xcconfig `https:/$()/` spelling, and rebuild both phones with the same value. The UI now shows this requirement before enabling insertion; actual message delivery is still a device test.
+
 The Apple sample validates only its shared-storage configuration; Google and transport placeholders can remain for now. If an older build reports **Configure URLs**, rebuild with the configuration-isolation fix. With a free account, Apple's [current capability table](https://developer.apple.com/help/account/reference/supported-capabilities-ios) lists App Groups as supported: enable the same group for both targets through Xcode's Signing & Capabilities workflow and resolve provisioning errors. Merely typing a group name in `Local.xcconfig` does not grant storage access. See [Apple troubleshooting](docs/APPLE-M0.md).
 
 ## Build and local checks
