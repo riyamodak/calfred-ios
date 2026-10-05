@@ -14,36 +14,10 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(MARKETING_VERSION)</string>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>Choose calendar events to share and select where to save events you receive.</string>
-	<key>CalendarShareAppGroup</key>
-	<string>$(APP_GROUP_IDENTIFIER)</string>
-	<key>CalendarShareKeychainGroup</key>
-	<string>$(AppIdentifierPrefix)$(KEYCHAIN_GROUP_SUFFIX)</string>
-	<key>CalendarShareSetupScheme</key>
-	<string>$(SETUP_URL_SCHEME)</string>
-	<key>CalendarShareGoogleClientID</key>
-	<string>$(GOOGLE_CLIENT_ID)</string>
-	<key>CalendarShareGoogleRedirectScheme</key>
-	<string>$(GOOGLE_REDIRECT_SCHEME)</string>
-	<key>CalendarShareMessageBaseURL</key>
-	<string>$(MESSAGE_BASE_URL)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UILaunchScreen</key>
-	<dict/>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -62,6 +36,32 @@
 				<string>$(GOOGLE_REDIRECT_SCHEME)</string>
 			</array>
 		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CalendarShareAppGroup</key>
+	<string>$(APP_GROUP_IDENTIFIER)</string>
+	<key>CalendarShareGoogleClientID</key>
+	<string>$(GOOGLE_CLIENT_ID)</string>
+	<key>CalendarShareGoogleRedirectScheme</key>
+	<string>$(GOOGLE_REDIRECT_SCHEME)</string>
+	<key>CalendarShareKeychainGroup</key>
+	<string>$(AppIdentifierPrefix)$(KEYCHAIN_GROUP_SUFFIX)</string>
+	<key>CalendarShareMessageBaseURL</key>
+	<string>$(MESSAGE_BASE_URL)</string>
+	<key>CalendarShareSetupScheme</key>
+	<string>$(SETUP_URL_SCHEME)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Choose calendar events to share and select where to save events you receive.</string>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 </dict>
 </plist>

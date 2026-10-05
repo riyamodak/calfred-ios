@@ -1,6 +1,27 @@
 # Apple calendar M0 probe
 
-Status: implemented as a development probe; **no physical-device result has been recorded**. A successful simulator or unsigned build does not prove the extension permission or save path.
+Status: the user reported full access granted in the companion and subsequent extension enumeration of **5 calendars, 3 writable**, with no second prompt on **iPhone 16 Pro / iOS 26.7**. On October 5, the user confirmed sample opening, editing controls, destination selection, and a successful save visible in Apple Calendar. Exact saved-field/date semantics, restart/setup restoration, and the reverse permission sequence remain untested. See the [device report](M0-FEASIBILITY.md).
+
+After full access, the companion and extension home show calendar names, account labels, and whether each calendar can accept events. They reload on activation and offer **Refresh calendars**. Calendar enumeration works before Google, the HTTPS help URL, or App Group storage is configured. The user's October 5 screenshot confirms the updated extension inventory displays calendar names and read-only labels.
+
+To test a write next, open **Open sample to test saving** in the extension, choose a writable calendar, and tap Add. This creates the sample “Trip to Chicago” for October 10–12, 2026. Shared App Group storage must be configured so the attempted-write guard can be saved; Google and the HTTPS help URL are unnecessary for this local save test. The collapsed **Send sample cards** controls are separate tests of actual Messages delivery, and require the owned HTTPS URL.
+
+### If opening the sample only flashes “Working…”
+
+The sample first persists its receive state in the shared App Group. Apple calendar permission does not grant access to that storage. The original UI showed storage errors only in **Test status**, below the initiating button. The updated UI also keeps the error beside **Open sample to test saving**; after a successful open it requests expanded presentation and scrolls to the received event. It never inserts this local sample into the Messages compose box.
+
+1. In Xcode, select **CalendarShare**, open **Signing & Capabilities**, and add/select the group under **App Groups** using your team. Put its exact identifier in `APP_GROUP_IDENTIFIER` in `Configuration/Local.xcconfig`. Replace the `group.your.owned.identifier.CalendarShare` example.
+2. Enable that same group for **CalendarShareMessages**. Both signed provisioning profiles must authorize it. The repository's shared entitlement file already references `$(APP_GROUP_IDENTIFIER)`. Resolve any capability/signing errors in Xcode; entering an identifier in a file alone does not provision the capability.
+3. Rebuild and install the signed companion with its embedded extension. Reopen the extension and tap **Open sample to test saving**. Expect the received event and writable-calendar choices; nothing is saved until an explicit Add.
+4. If it still fails, record the complete inline error. A custom identifier alone is not proof that the signed entitlement or storage write works on the phone.
+
+Apple's [current capability table](https://developer.apple.com/help/account/reference/supported-capabilities-ios) lists App Groups for free Apple Developer accounts as well as paid memberships (checked October 5, 2026). Use Xcode's capability/signing workflow; paid enrollment is not assumed necessary here. Actual signed storage access remains a device test.
+
+### If the error says “Configure URLs”
+
+The original configuration initializer parsed the Google redirect and message help URLs even when the caller only needed Apple shared storage. A copied Google redirect placeholder contains underscores and is not a valid URL scheme; this could stop the sample before checking its App Group. This was a code bug, not a requirement to configure Google for Apple testing.
+
+The updated code validates settings only when the corresponding feature uses them. Rebuild with the fix, leave Google/help placeholders for later, and retry the sample. If App Group access is unavailable, the error now identifies shared storage and the Xcode steps above. The user supplied the old “Configure URLs” error on October 5 after setting a custom group identifier, using a free account, then confirmed successful sample opening and saving after the fix.
 
 `EventKitProbe` requests full event access only through an explicit action. Both targets need `NSCalendarsFullAccessUsageDescription`. Write-only access is shown as insufficient because the custom destination picker must enumerate real calendars. Calendar references remain local and are revalidated by calendar ID, source ID and write capability immediately before a save.
 

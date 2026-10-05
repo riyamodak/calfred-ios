@@ -10,15 +10,20 @@ import GoogleCalendarProvider
 final class MessagesModel: ObservableObject {
     @Published var draft: ReceiveDraft?
     @Published var calendars: [CalendarRef] = []
-    @Published var status = "Select a sample to insert a draft card. Tap the normal Messages Send button yourself."
-    @Published var appleStatus = EventKitProbe.permissionStatus().explanation
+    @Published var status = "Allow calendar access to see calendars on this iPhone. Open a sample below when you are ready to test saving."
+    @Published var applePermission = EventKitProbe.permissionStatus()
+    @Published var appleCalendars: [CalendarRef]?
+    @Published var appleLoading = false
+    @Published var appleError: String?
     @Published var googleStatus = "Google not checked"
     @Published var grantedScopes: [String] = []
     @Published var diagnostics = ""
     @Published var busy = false
     @Published var canRetryInsertion = false
+    @Published var sampleError: String?
     var insert: ((ShareSnapshot, URL) async throws -> Void)?
     var openSetup: ((URL) async -> Bool)?
+    var expandPresentation: (() -> Void)?
     private let apple = EventKitProbe()
     private var insertionSnapshot: ShareSnapshot?
     private var persistence: Task<Void, Never>?
@@ -53,15 +58,17 @@ final class MessagesModel: ObservableObject {
                 status = "Payload decoded. Select a destination and tap Add to save an independent copy."
             } else if let stored {
                 draft = stored
-                diagnostics = try describe(stored.snapshot, codec: HarnessConfiguration().codec())
+                // A local save sample does not require a configured Messages help URL.
+                diagnostics = (try? describe(stored.snapshot, codec: HarnessConfiguration().codec())) ?? "Local sample: message delivery has not been tested."
                 status = "Pending receive restored. Review your edits and tap Add when ready."
             }
-            await refreshConnectionsInternal()
         } catch {
             // A malformed selected card must never expose a previous card's Add button.
             if messageURL != nil { draft = nil; calendars = []; diagnostics = "" }
             status = error.localizedDescription
         }
+        // Calendar access can be checked even before App Group or transport setup.
+        await refreshConnectionsInternal()
     }
 
     func refreshConnections() async {
@@ -73,19 +80,9 @@ final class MessagesModel: ObservableObject {
     }
 
     private func refreshConnectionsInternal() async {
-        appleStatus = EventKitProbe.permissionStatus().explanation
         // Rebuild choices rather than enabling Add from a stale in-memory list.
         calendars = []
-        if EventKitProbe.permissionStatus().canListCalendars {
-            do {
-                let listed = try await apple.listCalendars(writableOnly: true)
-                calendars += listed
-                draft?.revalidateDestination(in: listed, provider: .apple)
-            }
-            catch { appleStatus = error.localizedDescription }
-        } else if draft?.selectedDestination?.provider == .apple {
-            draft?.selectedDestination = nil
-        }
+        await loadAppleCalendars()
         do {
             let store = try HarnessConfiguration().googleStore()
             let connection = try await store.status()
@@ -134,24 +131,53 @@ final class MessagesModel: ObservableObject {
 
     func openLocalReceiveFixture() {
         run {
-            let codec = try HarnessConfiguration().codec()
-            let snapshot = codec.sampleSnapshot()
-            self.draft = ReceiveDraft(snapshot: snapshot)
-            self.diagnostics = try self.describe(snapshot, codec: codec)
-            try await self.persistCurrent()
-            self.status = "Local receive fixture — this does not test message delivery. Choose a test calendar and tap Add."
+            self.sampleError = nil
+            let snapshot = M0Samples.allDaySnapshot()
+            let sample = ReceiveDraft(snapshot: snapshot)
+            do {
+                try await self.pendingStore().save(sample)
+            } catch {
+                // Keep the failure beside the initiating button, not only below the fold.
+                self.sampleError = error.localizedDescription
+                throw error
+            }
+            self.draft = sample
+            self.diagnostics = "Local sample: message delivery has not been tested."
+            self.status = "Sample ready. Choose a writable calendar, then tap Add to create a real test event."
+            self.expandPresentation?()
             await self.refreshConnectionsInternal()
         }
     }
 
     func requestApple() {
         run {
-            self.appleStatus = try await self.apple.requestFullAccess().explanation
-            let listed = try await self.apple.listCalendars()
-            self.calendars.removeAll { $0.provider == .apple }
-            self.calendars += listed.filter(\.isWritable)
-            self.draft?.revalidateDestination(in: listed, provider: .apple)
-            self.status = "Extension listed \(listed.count) device calendars, \(listed.filter(\.isWritable).count) writable. Record whether a permission prompt appeared."
+            await self.loadAppleCalendars(requestAccess: true)
+            if let listed = self.appleCalendars {
+                self.status = "Found \(listed.count) device calendars, \(listed.filter(\.isWritable).count) writable."
+            }
+        }
+    }
+
+    private func loadAppleCalendars(requestAccess: Bool = false) async {
+        appleLoading = true
+        appleError = nil
+        appleCalendars = nil
+        calendars.removeAll { $0.provider == .apple }
+        defer { appleLoading = false }
+        do {
+            if requestAccess { _ = try await apple.requestFullAccess() }
+            applePermission = EventKitProbe.permissionStatus()
+            if applePermission.canListCalendars {
+                let listed = try await apple.listCalendars()
+                appleCalendars = listed
+                calendars += listed.filter(\.isWritable)
+                draft?.revalidateDestination(in: listed, provider: .apple)
+            } else if draft?.selectedDestination?.provider == .apple {
+                draft?.selectedDestination = nil
+            }
+        } catch {
+            applePermission = EventKitProbe.permissionStatus()
+            appleError = error.localizedDescription
         }
     }
 
@@ -185,9 +211,9 @@ final class MessagesModel: ObservableObject {
     func setup(_ purpose: GoogleAuthorizationPurpose) {
         run {
             try await self.persistCurrent()
-            let configuration = try HarnessConfiguration()
+            let configuration = HarnessConfiguration()
             var components = URLComponents()
-            components.scheme = configuration.setupScheme
+            components.scheme = try configuration.setupScheme
             components.host = "setup"
             components.queryItems = [URLQueryItem(name: "purpose", value: purpose.rawValue)]
             guard let url = components.url else { throw ConfigurationError.missing("setup URL scheme") }
@@ -275,7 +301,7 @@ final class MessagesModel: ObservableObject {
         run {
             try await self.pendingStore().clear()
             self.draft = nil
-            self.calendars = []
+            self.diagnostics = ""
             self.status = "Pending local receive cleared. Existing calendar copies and sent messages remain."
         }
     }

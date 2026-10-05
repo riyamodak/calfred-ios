@@ -8,6 +8,10 @@ final class MessagesViewController: MSMessagesAppViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        model.expandPresentation = { [weak self] in
+            guard let self, self.presentationStyle != .expanded else { return }
+            self.requestPresentationStyle(.expanded)
+        }
         model.insert = { [weak self] snapshot, url in
             guard let conversation = self?.activeConversation else { throw MessagesProbeError.noConversation }
             let layout = MSMessageTemplateLayout()

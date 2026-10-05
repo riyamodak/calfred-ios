@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		206D99A5537EF67B7995164B /* Support/AppleCalendarsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 054B342BB500F2EDA94FEDCD /* Support/AppleCalendarsSection.swift */; };
+		94636AB2369059FB78587CEB /* Support/AppleCalendarsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 054B342BB500F2EDA94FEDCD /* Support/AppleCalendarsSection.swift */; };
 		09D58A730DCF9833830D543C /* MessagesExtension/MessagesHarnessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF3366BCEC24467BA725F56 /* MessagesExtension/MessagesHarnessView.swift */; };
 		0ABB391F69E9E32950B52ED4 /* EventKitProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 4F4B9FD0094664EAE5749F50 /* EventKitProvider */; };
 		3301C37A0149B6A49B7C12C1 /* CalendarDomain in Frameworks */ = {isa = PBXBuildFile; productRef = B5949BEC589BAB1D31F0C172 /* CalendarDomain */; };
@@ -55,6 +57,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		054B342BB500F2EDA94FEDCD /* Support/AppleCalendarsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support/AppleCalendarsSection.swift; sourceTree = "<group>"; };
 		50603D47F4C74C36BBF7245F /* CalendarShareMessages.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CalendarShareMessages.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B3CC4A0F052F3D586275275 /* Configuration/Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Base.xcconfig; sourceTree = "<group>"; };
 		7387F584952887E698B51FF2 /* App/GoogleAuthorizationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/GoogleAuthorizationController.swift; sourceTree = "<group>"; };
@@ -107,6 +110,7 @@
 				96CEF408FB4D788286EF8EFE /* MessagesExtension/MessagesModel.swift */,
 				E84399E2C99CACFEA14DFED4 /* MessagesExtension/MessagesViewController.swift */,
 				741DA37CDB63D52FAF7339C2 /* Support/HarnessConfiguration.swift */,
+				054B342BB500F2EDA94FEDCD /* Support/AppleCalendarsSection.swift */,
 				FBDC4F23F93125BBEEAE800C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -240,6 +244,7 @@
 				AEA33DC8787B54C7D6D87C05 /* App/CalendarShareApp.swift in Sources */,
 				F663496DB57A09E48B01380C /* App/GoogleAuthorizationController.swift in Sources */,
 				D76AB97BBB105CF44E7D1E67 /* Support/HarnessConfiguration.swift in Sources */,
+				206D99A5537EF67B7995164B /* Support/AppleCalendarsSection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,6 +256,7 @@
 				62C196CD9126710551828BEB /* MessagesExtension/MessagesModel.swift in Sources */,
 				84FC6C76735C285498403D01 /* MessagesExtension/MessagesViewController.swift in Sources */,
 				A93D557FB47478D566C7E5EB /* Support/HarnessConfiguration.swift in Sources */,
+				94636AB2369059FB78587CEB /* Support/AppleCalendarsSection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,6 +343,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -383,6 +390,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 0.0.1;

@@ -6,58 +6,40 @@ import AuthorizationStore
 import GoogleCalendarProvider
 
 struct HarnessConfiguration {
-    let appGroup: String
-    let keychainGroup: String
-    let setupScheme: String
-    let clientID: String
-    let redirectURI: URL
-    let messageBaseURL: URL
+    private let values: M0ConfigurationValues
+    var appGroup: String { get throws { try values.value("CalendarShareAppGroup") } }
+    var keychainGroup: String { get throws { try values.value("CalendarShareKeychainGroup") } }
+    var setupScheme: String { get throws { try values.value("CalendarShareSetupScheme") } }
+    var clientID: String { get throws { try values.value("CalendarShareGoogleClientID") } }
+    var redirectURI: URL { get throws { try values.googleRedirectURI() } }
 
-    init(bundle: Bundle = .main) throws {
-        func value(_ key: String) throws -> String {
-            guard let value = bundle.object(forInfoDictionaryKey: key) as? String,
-                  !value.isEmpty, !value.contains("$(") else { throw ConfigurationError.missing(key) }
-            return value
-        }
-        appGroup = try value("CalendarShareAppGroup")
-        keychainGroup = try value("CalendarShareKeychainGroup")
-        setupScheme = try value("CalendarShareSetupScheme")
-        clientID = try value("CalendarShareGoogleClientID")
-        guard let redirect = URL(string: try value("CalendarShareGoogleRedirectScheme") + ":/oauthredirect"),
-              let base = URL(string: try value("CalendarShareMessageBaseURL")) else {
-            throw ConfigurationError.missing("URLs")
-        }
-        redirectURI = redirect
-        messageBaseURL = base
+    init(bundle: Bundle = .main) {
+        values = M0ConfigurationValues((bundle.infoDictionary ?? [:]).compactMapValues { $0 as? String })
     }
 
     func containerURL() throws -> URL {
+        let appGroup = try appGroup
         guard !appGroup.contains("com.example"),
+              !appGroup.contains("your.owned.identifier"),
+              !appGroup.contains("YOUR_"),
               let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
-            throw ConfigurationError.missing("App Group and signing entitlements")
+            throw ConfigurationError.appGroupUnavailable
         }
         return url
     }
 
     func googleStore() throws -> GoogleAuthorizationStore {
-        guard !clientID.contains("REPLACE_ME") else { throw ConfigurationError.missing("Google iOS OAuth client") }
-        return GoogleAuthorizationStore(keychainAccessGroup: keychainGroup,
+        let clientID = try clientID
+        guard !clientID.contains("REPLACE_ME"), !clientID.contains("YOUR_") else {
+            throw ConfigurationError.missing("Google iOS OAuth client")
+        }
+        return GoogleAuthorizationStore(keychainAccessGroup: try keychainGroup,
                                         lockURL: try containerURL().appendingPathComponent("google-auth.lock"))
     }
 
     func codec() throws -> MessageCodec {
-        guard messageBaseURL.host != "example.invalid", messageBaseURL.host != "YOUR_OWNED_HOST" else {
-            throw ConfigurationError.missing("owned HTTPS help URL")
-        }
-        return try MessageCodec(baseURL: messageBaseURL)
+        try MessageCodec(baseURL: values.messageBaseURL())
     }
 }
 
-enum ConfigurationError: LocalizedError {
-    case missing(String)
-    var errorDescription: String? {
-        switch self {
-        case .missing(let setting): return "Configure \(setting) in Configuration/Local.xcconfig, then rebuild. See README."
-        }
-    }
-}
+typealias ConfigurationError = M0ConfigurationError

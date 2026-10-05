@@ -1,13 +1,13 @@
 # Calendar Share — M0
 
-Native iOS 17+ feasibility harness for the [implementation spec](imessage-calendar-sharing-spec.md). The repository began with only that spec. M0 code is implemented; **the physical-device feasibility gates are still pending**. No Apple Developer account, Google Cloud account, OAuth login, or signing identity was configured by this task.
+Native iOS 17+ feasibility harness for the [implementation spec](imessage-calendar-sharing-spec.md). The repository began with only that spec. M0 code is implemented. The user has reported successful Apple permission and calendar enumeration on iPhone 16 Pro / iOS 26.7; **the remaining physical-device feasibility gates are still pending**.
 
 Open **`CalendarShare.xcodeproj`**, select the **CalendarShare** scheme, and build. The containing SwiftUI app embeds `CalendarShareMessages`, a SwiftUI interface hosted by `MSMessagesAppViewController`. Shared Swift code lives in `Packages/CalendarShareKit`. AppAuth is pinned to **1.7.6**; the app links `AppAuth`, while the extension links only the shared targets and `AppAuthCore`.
 
 ## What M0 contains
 
 - Synthetic all-day, timed/DST, and near-limit Unicode cards; draft insertion uses the normal Messages Send button. Retrying an insertion reuses its snapshot. Sender/receiver diagnostics show share ID, URL length, and SHA-256 for comparison without logging the payload.
-- Explicit Apple full-access and calendar-list probes, plus fresh independent-copy creation from the extension.
+- Apple calendar inventory in both companion and extension: names, account labels, read-only/writable status, automatic loading after authorization, and Refresh. Calendar listing works before Google or shared-storage configuration. Explicit independent-copy creation is available through the local save sample.
 - Explicit Google browse-only, initial read/write, and full-set reauthorization in the companion. Actual scopes and account identity are checked before and after refreshing a new grant. The extension has calendar-list, silent expiry refresh, force-refresh, and explicit copy-create probes.
 - A single receive screen with no default destination, inline title/location/note edits and Add. Shared pending state survives setup; the selected destination is revalidated on return. An unavailable calendar check preserves edits and keeps Add disabled. Consent never triggers a calendar write.
 - Shared Keychain credentials, App Group pending state, and OS file locks. A persisted attempted-write flag blocks a repeat Add for that pending M0 probe, including after an uncertain result.
@@ -25,9 +25,13 @@ This is a one-pending-receive-slot development harness. Full source browsing/sea
 
 Both targets include `NSCalendarsFullAccessUsageDescription`; opening the app or extension does not request Apple access. Authorization UI stays in the companion. If `NSExtensionContext.open` cannot open setup, the extension provides manual Home Screen setup instructions and preserves the pending receive. It never promises a return to a particular conversation.
 
+For Apple-first testing, start with the visible calendar list. Next, **Open sample to test saving** in the extension opens a synthetic received event; choose a writable calendar and tap Add. This local write test requires the shared App Group, but no Google client or HTTPS help URL. The **Send sample cards** disclosure contains the separate two-device delivery tests, which do require the owned HTTPS URL. **Reset test state** clears only the pending local sample, never a saved calendar event.
+
+The Apple sample validates only its shared-storage configuration; Google and transport placeholders can remain for now. If an older build reports **Configure URLs**, rebuild with the configuration-isolation fix. With a free account, Apple's [current capability table](https://developer.apple.com/help/account/reference/supported-capabilities-ios) lists App Groups as supported: enable the same group for both targets through Xcode's Signing & Capabilities workflow and resolve provisioning errors. Merely typing a group name in `Local.xcconfig` does not grant storage access. See [Apple troubleshooting](docs/APPLE-M0.md).
+
 ## Build and local checks
 
-This session used Xcode 15.0.1 (15A507), Swift 5.9, and the iOS 17.0 SDK/runtime. Use an appropriate current Xcode to test current physical iPhones; current shipping iOS is not validated here.
+Initial local validation used Xcode 15.0.1 (15A507), Swift 5.9, and the iOS 17.0 SDK/runtime. The selected Xcode is now 27.0 (27A266a). The feasibility report records which checks were performed locally and which were reported by the user on a physical iPhone.
 
 ```sh
 swift test --package-path Packages/CalendarShareKit
@@ -42,6 +46,6 @@ xcodebuild -project CalendarShare.xcodeproj -scheme CalendarShare \
 
 The last command compiles device binaries without signing; it does not install or run them on an iPhone. Network access is needed once to resolve AppAuth. The committed `Package.resolved` files pin the resolved revision. AppAuth 1.7.6 emits legacy API deprecation warnings in its presentation implementation; dependency modernization/release review remains later work.
 
-The Xcode project and Info.plists are checked in. If adding/removing Swift files, run `python3 scripts/generate-project.py` to regenerate their references; no XcodeGen or Ruby gems are required. Change build settings/Info.plist templates in that script, then regenerate. Keep private configuration in `Local.xcconfig`.
+The Xcode project and Info.plists are checked in. `python3 scripts/generate-project.py` can recreate them without XcodeGen or Ruby gems, but it overwrites project and Info.plist edits made in Xcode. Preserve any intentional changes before regenerating, or add new source references directly in Xcode. Keep private configuration in `Local.xcconfig`.
 
 Implementation progress: [checklist](docs/IMPLEMENTATION-PLAN.md). Observed results and remaining gates: [feasibility report](docs/M0-FEASIBILITY.md). Detailed provider procedures: [Apple](docs/APPLE-M0.md), [Google](docs/GOOGLE-M0.md).

@@ -1,5 +1,7 @@
 import SwiftUI
 import UIKit
+import EventKit
+import CalendarDomain
 import EventKitProvider
 import AuthorizationStore
 import GoogleCalendarProvider
@@ -14,28 +16,25 @@ struct CalendarShareApp: App {
         WindowGroup {
             NavigationStack {
                 Form {
-                    Section("M0 platform probes") {
-                        Text("Set up connections here, then return to your conversation in Messages. This build is a feasibility harness.")
-                        Text("Device: iOS \(UIDevice.current.systemVersion)").font(.caption)
-                    }
-                    Section("Apple · Calendars on this iPhone") {
-                        Text(model.appleStatus)
-                        Button("Request Apple full access") { model.requestApple() }
-                    }
+                    AppleCalendarsSection(permission: model.applePermission, calendars: model.appleCalendars,
+                                          isLoading: model.appleLoading, error: model.appleError,
+                                          onAction: model.requestApple)
                     Section("Google · Direct connection") {
-                        Text(model.googleStatus)
-                        if let purpose = model.requestedPurpose {
-                            Text(purpose == .save ? "Messages requested permission to save. After connecting, return manually and tap Add." : "Messages requested permission to browse.")
-                        }
-                        Button("Connect for browsing (read only)") { model.connect(.browse) }
-                        Button("Connect / reauthorize for saving") { model.connect(.save) }
-                        Text("Saving consent permits Google event creation, editing, and deletion. This harness only creates copies after Add; it never edits or deletes your existing events.")
-                            .font(.caption)
-                        Button("Force refresh and list calendars") { model.refreshProbe() }
-                        Button("Disconnect Google", role: .destructive) { model.disconnect() }
-                        if !model.scopes.isEmpty {
-                            DisclosureGroup("Actually granted scopes") {
-                                ForEach(model.scopes, id: \.self) { Text($0).font(.caption).textSelection(.enabled) }
+                        DisclosureGroup("Set up Google") {
+                            Text(model.googleStatus)
+                            if let purpose = model.requestedPurpose {
+                                Text(purpose == .save ? "Messages requested permission to save. After connecting, return manually and tap Add." : "Messages requested permission to browse.")
+                            }
+                            Button("Connect for browsing (read only)") { model.connect(.browse) }
+                            Button("Connect / reauthorize for saving") { model.connect(.save) }
+                            Text("Saving consent permits Google event creation, editing, and deletion. This harness only creates copies after Add; it never edits or deletes your existing events.")
+                                .font(.caption)
+                            Button("Force refresh and list calendars") { model.refreshProbe() }
+                            Button("Disconnect Google", role: .destructive) { model.disconnect() }
+                            if !model.scopes.isEmpty {
+                                DisclosureGroup("Actually granted scopes") {
+                                    ForEach(model.scopes, id: \.self) { Text($0).font(.caption).textSelection(.enabled) }
+                                }
                             }
                         }
                     }
@@ -47,6 +46,9 @@ struct CalendarShareApp: App {
                         Section("Probe result") { Text(model.message).textSelection(.enabled) }
                     }
                     if model.busy { ProgressView("Working…") }
+                    Section {
+                        Text("M0 testing build · iOS \(UIDevice.current.systemVersion)").font(.caption)
+                    }
                 }
                 .disabled(model.busy)
                 .navigationTitle("Calendar Share M0")
@@ -56,13 +58,20 @@ struct CalendarShareApp: App {
                 if phase == .active { Task { await model.reload() } }
             }
             .onOpenURL { model.open($0) }
+            .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in
+                guard !model.busy else { return }
+                Task { await model.loadAppleCalendars() }
+            }
         }
     }
 }
 
 @MainActor
 final class CompanionModel: ObservableObject {
-    @Published var appleStatus = "Not checked"
+    @Published var applePermission = EventKitProbe.permissionStatus()
+    @Published var appleCalendars: [CalendarRef]?
+    @Published var appleLoading = false
+    @Published var appleError: String?
     @Published var googleStatus = "Not checked"
     @Published var scopes: [String] = []
     @Published var message = ""
@@ -72,7 +81,7 @@ final class CompanionModel: ObservableObject {
     private var authorization: GoogleAuthorizationController?
 
     func reload() async {
-        appleStatus = EventKitProbe.permissionStatus().explanation
+        await loadAppleCalendars()
         do {
             let store = try HarnessConfiguration().googleStore()
             if let connection = try await store.status() {
@@ -91,16 +100,33 @@ final class CompanionModel: ObservableObject {
 
     func requestApple() {
         run {
-            let status = try await self.apple.requestFullAccess()
-            self.appleStatus = status.explanation
-            self.message = "Companion permission probe complete. Independently run the Apple probe inside Messages and record whether another prompt appears."
+            await self.loadAppleCalendars(requestAccess: true)
+        }
+    }
+
+    func loadAppleCalendars(requestAccess: Bool = false) async {
+        guard !appleLoading else { return }
+        appleLoading = true
+        appleError = nil
+        defer { appleLoading = false }
+        do {
+            if requestAccess { _ = try await apple.requestFullAccess() }
+            applePermission = EventKitProbe.permissionStatus()
+            appleCalendars = nil
+            if applePermission.canListCalendars {
+                appleCalendars = try await apple.listCalendars()
+            }
+        } catch {
+            applePermission = EventKitProbe.permissionStatus()
+            appleCalendars = nil
+            appleError = error.localizedDescription
         }
     }
 
     func connect(_ purpose: GoogleAuthorizationPurpose) {
         run {
-            let config = try HarnessConfiguration()
-            let controller = GoogleAuthorizationController(clientID: config.clientID, redirectURI: config.redirectURI, authorizationStore: try config.googleStore())
+            let config = HarnessConfiguration()
+            let controller = try GoogleAuthorizationController(clientID: config.clientID, redirectURI: config.redirectURI, authorizationStore: config.googleStore())
             self.authorization = controller
             guard let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first(where: { $0.activationState == .foregroundActive }),
                   let root = scene.windows.first(where: \.isKeyWindow)?.rootViewController else {
@@ -133,7 +159,7 @@ final class CompanionModel: ObservableObject {
 
     func disconnect() {
         run {
-            let config = try HarnessConfiguration()
+            let config = HarnessConfiguration()
             try await config.googleStore().disconnect()
             let pending = try PendingReceiveStore(containerURL: config.containerURL())
             try await pending.update { draft in
@@ -146,7 +172,7 @@ final class CompanionModel: ObservableObject {
 
     func open(_ url: URL) {
         if authorization?.resume(url: url) == true { return }
-        guard let config = try? HarnessConfiguration(), url.scheme == config.setupScheme, url.host == "setup" else { return }
+        guard let scheme = try? HarnessConfiguration().setupScheme, url.scheme == scheme, url.host == "setup" else { return }
         requestedPurpose = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "purpose" })?.value.flatMap(GoogleAuthorizationPurpose.init(rawValue:))
         message = "Setup opened from Messages. Choose the connection action above, then return manually."
     }
